@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
+      integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w=="
+      crossorigin="anonymous"
+    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <title>SDB-Extractor</title>
+  </head>
+  <body class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center mx-8">
+    <h1 class="text-4xl py-4">SDB-Extractor</h1>
+    <div class="grid grid-cols-2 gap-4">
+      <div
+        class="flex flex-col justify-around items-center px-4 bg-white shadow-lg rounded-3xl"
+      >
+        <label for="file">
+          Datei hochladen
+          <input type="file" name="file" id="file" />
+        </label>
+        <button
+          class="px-3 py-2 bg-blue-600 rounded shadow text-white text-lg w-72"
+          id="upload"
+        >
+          Extract
+        </button>
+      </div>
+      <div
+        class="px-4 py-10 bg-white shadow-lg rounded-3xl overflow-scroll max-w-full"
+      >
+        <pre id="result" class="break-all">
+{
+    "bezeichnung": "bezeichnung des stoffs",
+    "lagerklasse": "3",
+    "signalwort": "Gefahr",
+    "hSaezte": [
+        "H225",
+        "H315",
+        "H361f",
+        "H336",
+        "H373",
+        "H304",
+        "H411"
+    ],
+    "pSaezte": [
+        "P210",
+        "P243",
+        "P273",
+        "P301+P330+P331",
+        "P370+P378",
+        "P403"
+    ]
+    }
+        </pre>
+      </div>
+    </div>
+    <script>
+      const fileInput = document.getElementById('file');
+      const uploadBtn = document.getElementById('upload');
+      const resultArea = document.getElementById('result');
+
+      uploadBtn.addEventListener('click', async () => {
+        console.log('I AM HERE');
+        const form = new FormData();
+        form.set('file', fileInput.files[0]);
+        const result = await fetch('/extract', {
+          method: 'POST',
+          body: form,
+        }).then((res) => res.json());
+        resultArea.innerText = JSON.stringify(result, null, 2);
+      });
+    </script>
+  </body>
+</html>
