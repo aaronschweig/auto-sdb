@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ams-auto-sdb
+  namespace: default
+  labels:
+    ams-pro: auto-sdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      ams-pro: auto-sdb
+  template:
+    metadata:
+      labels:
+        ams-pro: auto-sdb
+    spec:
+      containers:
+        - name: ams-auto-sdb
+          image: aaronschweig/auto-sdb:0.1.0
+          ports:
+            - name: web
+              containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ams-auto-sdb
+  namespace: default
+spec:
+  ports:
+    - protocol: TCP
+      name: web
+      port: 3000
+  selector:
+    ams-pro: auto-sdb
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ams-auto-sdb
+  namespace: default
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`auto-sdb.aaronschweig.dev`)
+      kind: Rule
+      services:
+        - name: ams-auto-sdb
+          port: 3000
+  tls:
+    certResolver: cloudflare
