@@ -1,9 +1,11 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/exec"
@@ -23,19 +25,22 @@ func NewErrResponse(err error) *ErrResponse {
 	return &ErrResponse{err.Error()}
 }
 
+var (
+	//go:embed frontend/index.html
+	frontend embed.FS
+)
+
 func main() {
 	log := hclog.Default()
 	r := chi.NewRouter()
 
-	// r.Use(middleware.SetHeader("content-type", "application/json"))
 	r.Use(middleware.BasicAuth("SDB-Extractor", map[string]string{
 		"admin": "admin",
 	}))
 
-	r.Get("/", func(rw http.ResponseWriter, r *http.Request) {
-		rw.Header().Set("content-type", "text/html")
-		http.ServeFile(rw, r, "frontend/index.html")
-	})
+	static, _ := fs.Sub(frontend, "frontend")
+
+	r.Handle("/", http.FileServer(http.FS(static)))
 
 	r.Post("/extract", func(rw http.ResponseWriter, r *http.Request) {
 		r.ParseMultipartForm(10 << 20)
@@ -44,11 +49,11 @@ func main() {
 		file, _, _ := r.FormFile("file")
 		defer file.Close()
 
-		tempFile, _ := ioutil.TempFile(".", "sdb-*.pdf")
+		tempFile, _ := os.CreateTemp(".", "sdb-*.pdf")
 		defer tempFile.Close()
 		defer os.Remove(tempFile.Name())
 
-		content, _ := ioutil.ReadAll(file)
+		content, _ := io.ReadAll(file)
 
 		tempFile.Write(content)
 
@@ -60,6 +65,7 @@ func main() {
 			log.Error("could not process pdf with gs", "error", err)
 
 			rw.WriteHeader(http.StatusInternalServerError)
+			rw.Header().Add("Content-Type", "application/json")
 			json.NewEncoder(rw).Encode(NewErrResponse(err))
 			return
 		}
@@ -68,6 +74,7 @@ func main() {
 
 		result := e.Extract()
 
+		rw.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(rw).Encode(&result)
 	})
 

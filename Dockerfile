@@ -1,4 +1,4 @@
-FROM golang:alpine AS builder
+FROM golang:1.17-alpine AS builder
 
 WORKDIR /build
 
@@ -18,6 +18,5 @@ FROM alpine:latest
 RUN apk add ghostscript
 
 COPY --from=builder /dist/main /
-COPY --from=builder /build/frontend/ /frontend
 
 CMD ["/main"]

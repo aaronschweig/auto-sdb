@@ -19,14 +19,28 @@
       rel="stylesheet"
       type="text/css"
     />
-
+    <script src="https://unpkg.com/@alenaksu/json-viewer@latest"></script>
     <title>SDB-Extractor</title>
+    <style>
+      json-viewer {
+        --background-color: white;
+        --string-color: #000;
+      }
+    </style>
   </head>
   <body class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center mx-8">
     <h1 class="text-4xl py-4">SDB-Extractor</h1>
     <div class="grid grid-cols-2 gap-4">
       <div
-        class="flex flex-col justify-around items-center px-4 bg-white shadow-lg rounded-3xl"
+        class="
+          flex flex-col
+          justify-around
+          items-center
+          px-4
+          bg-white
+          shadow-lg
+          rounded-3xl
+        "
       >
         <label for="file">
           Datei hochladen
@@ -39,49 +53,65 @@
           Extract
         </button>
       </div>
-      <div
-        class="px-4 py-10 bg-white shadow-lg rounded-3xl overflow-scroll max-w-full"
-      >
-        <pre id="result" class="break-all">
-{
-    "bezeichnung": "bezeichnung des stoffs",
-    "lagerklasse": "3",
-    "signalwort": "Gefahr",
-    "hSaezte": [
-        "H225",
-        "H315",
-        "H361f",
-        "H336",
-        "H373",
-        "H304",
-        "H411"
-    ],
-    "pSaezte": [
-        "P210",
-        "P243",
-        "P273",
-        "P301+P330+P331",
-        "P370+P378",
-        "P403"
-    ]
-    }
-        </pre>
+      <div class="bg-white flex justify-center px-4 py-10 rounded-3xl shadow-lg">
+        <svg
+          id="loading-spinner"
+          class="animate-spin h-16 text-green-700 hidden"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+        <json-viewer id="result"></json-viewer>
       </div>
     </div>
     <script>
       const fileInput = document.getElementById('file');
       const uploadBtn = document.getElementById('upload');
       const resultArea = document.getElementById('result');
+      const loadingSpinner = document.getElementById('loading-spinner')
+
+      resultArea.data = {
+        bezeichnung: 'bezeichnung des stoffs',
+        lagerklasse: '3',
+        signalwort: 'Gefahr',
+        hSaezte: ['H225', 'H315', 'H361f', 'H336', 'H373', 'H304', 'H411'],
+        pSaezte: [
+          'P210',
+          'P243',
+          'P273',
+          'P301+P330+P331',
+          'P370+P378',
+          'P403',
+        ],
+      };
 
       uploadBtn.addEventListener('click', async () => {
-        console.log('I AM HERE');
         const form = new FormData();
         form.set('file', fileInput.files[0]);
+
+        loadingSpinner.classList.remove('hidden')
+        resultArea.data = {};
+
         const result = await fetch('/extract', {
           method: 'POST',
           body: form,
         }).then((res) => res.json());
-        resultArea.innerText = JSON.stringify(result, null, 2);
+        loadingSpinner.classList.add('hidden')
+        resultArea.data = result;
       });
     </script>
   </body>
