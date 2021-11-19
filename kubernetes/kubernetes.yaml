@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: ams-auto-sdb
-          image: aaronschweig/auto-sdb:0.1.1
+          image: aaronschweig/auto-sdb:0.1.2
           ports:
             - name: web
               containerPort: 3000

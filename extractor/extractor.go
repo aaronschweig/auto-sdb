@@ -33,7 +33,7 @@ var (
 	Lagerklassen = [...]string{"1", "2A", "2B", "3", "4.1A", "4.1B", "4.2", "4.3", "5.1A", "5.1B", "5.1C", "5.2", "6.1A",
 		"6.1B", "6.1C", "6.1D", "6.2", "7", "8A", "8B", "10", "11", "12", "13", "10-13"}
 	hpSatzRegex       = regexp.MustCompile(`(?im)(\s?\+?\s?E?U?[HP][0-9]{3}[a-zA-Z]{0,2}){1,3}`)
-	signalwortRegex   = regexp.MustCompile(`(?im)signalwort(.*)`)
+	signalwortRegex   = regexp.MustCompile(`(?im)signalwort\r?\n?(.*)`)
 	lagerklassenRegex = regexp.MustCompile(`(?im)lagerklasse(.*)`)
 )
 
@@ -59,7 +59,7 @@ func (e *DefaultExtractor) ExtractBezeichnung() error {
 	matches := bzRegex.FindAllStringSubmatch(e.content, -1)
 
 	if len(matches) == 0 {
-		return errors.New("Could not extract bezeichnung.")
+		return errors.New("could not extract bezeichnung")
 	}
 
 	for i := range matches {
@@ -78,7 +78,7 @@ func (e *DefaultExtractor) ExtractBezeichnung() error {
 			candidate = strings.TrimSpace(candidate)
 
 			// Überschriftszeile
-			if len(candidate) == 0 {
+			if candidate == "" {
 				continue
 			}
 			e.result.Bezeichnung = candidate
@@ -86,14 +86,14 @@ func (e *DefaultExtractor) ExtractBezeichnung() error {
 		}
 	}
 
-	return errors.New("Could not extract bezeichnung.")
+	return errors.New("could not extract bezeichnung")
 }
 
 func (e *DefaultExtractor) ExtractSignalwort() error {
 	matches := signalwortRegex.FindAllString(e.content, -1)
 
 	if len(matches) == 0 {
-		return errors.New("Could not extract signalwort.")
+		return errors.New("could not extract signalwort")
 	}
 
 	for _, match := range matches {
@@ -107,14 +107,14 @@ func (e *DefaultExtractor) ExtractSignalwort() error {
 			return nil
 		}
 	}
-	return errors.New("Could not extract signalwort.")
+	return errors.New("could not extract signalwort")
 }
 
 func (e *DefaultExtractor) ExtractLagerklasse() error {
 	matches := lagerklassenRegex.FindAllString(e.content, -1)
 
 	if len(matches) == 0 {
-		return errors.New("Could not extract lagerklasse.")
+		return errors.New("could not extract lagerklasse")
 	}
 
 	for _, match := range matches {
@@ -130,14 +130,14 @@ func (e *DefaultExtractor) ExtractLagerklasse() error {
 			}
 		}
 	}
-	return errors.New("Could not extract lagerklasse.")
+	return errors.New("could not extract lagerklasse")
 }
 
 func (e *DefaultExtractor) ExtractHPSaetze() error {
 	matches := hpSatzRegex.FindAllString(e.content, -1)
 
 	if len(matches) == 0 {
-		return errors.New("Could not extract HP-Sätze.")
+		return errors.New("could not extract HP-Sätze")
 	}
 
 	for _, hpsatz := range matches {

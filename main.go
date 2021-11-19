@@ -43,8 +43,7 @@ func main() {
 	r.Handle("/", http.FileServer(http.FS(static)))
 
 	r.Post("/extract", func(rw http.ResponseWriter, r *http.Request) {
-		r.ParseMultipartForm(10 << 20)
-		rw.Header().Set("content-type", "application/json")
+		r.ParseMultipartForm(10 << 22) // 83MiB
 
 		file, _, _ := r.FormFile("file")
 		defer file.Close()
@@ -80,7 +79,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 
-	if len(port) == 0 {
+	if port == "" {
 		port = "3000"
 	}
 
