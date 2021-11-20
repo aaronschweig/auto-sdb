@@ -30,6 +30,11 @@ var (
 	frontend embed.FS
 )
 
+func returnError(w http.ResponseWriter, err error) {
+	w.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(NewErrResponse(err))
+}
+
 func main() {
 	log := hclog.Default()
 	r := chi.NewRouter()
@@ -38,21 +43,44 @@ func main() {
 		"admin": "admin",
 	}))
 
-	static, _ := fs.Sub(frontend, "frontend")
+	static, err := fs.Sub(frontend, "frontend")
+	if err != nil {
+		panic(err)
+	}
 
 	r.Handle("/", http.FileServer(http.FS(static)))
 
 	r.Post("/extract", func(rw http.ResponseWriter, r *http.Request) {
-		r.ParseMultipartForm(10 << 22) // 83MiB
 
-		file, _, _ := r.FormFile("file")
+		file, _, err := r.FormFile("file")
+		if err != nil {
+			log.Error("Error reading file", "error", err)
+
+			rw.WriteHeader(http.StatusBadRequest)
+			returnError(rw, err)
+			return
+		}
 		defer file.Close()
 
-		tempFile, _ := os.CreateTemp(".", "sdb-*.pdf")
+		tempFile, err := os.CreateTemp(".", "sdb-*.pdf")
+		if err != nil {
+			log.Error("Error creating temp file", "error", err)
+
+			rw.WriteHeader(http.StatusInternalServerError)
+			returnError(rw, err)
+			return
+		}
 		defer tempFile.Close()
 		defer os.Remove(tempFile.Name())
 
-		content, _ := io.ReadAll(file)
+		content, err := io.ReadAll(file)
+		if err != nil {
+			log.Error("Error reading file", "error", err)
+
+			rw.WriteHeader(http.StatusInternalServerError)
+			returnError(rw, err)
+			return
+		}
 
 		tempFile.Write(content)
 

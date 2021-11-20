@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ams-auto-sdb
+  namespace: default
+  labels:
+    ams-pro: auto-sdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      ams-pro: auto-sdb
+  template:
+    metadata:
+      labels:
+        ams-pro: auto-sdb
+    spec:
+      containers:
+        - name: ams-auto-sdb
+          image: aaronschweig/auto-sdb
+          ports:
+            - name: web
+              containerPort: 3000
