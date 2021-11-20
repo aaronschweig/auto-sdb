@@ -26,7 +26,7 @@ func NewErrResponse(err error) *ErrResponse {
 }
 
 var (
-	//go:embed frontend/index.html
+	//go:embed frontend/*
 	frontend embed.FS
 )
 

@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- include favicon -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"
@@ -53,7 +55,9 @@
           Extract
         </button>
       </div>
-      <div class="bg-white flex justify-center px-4 py-10 rounded-3xl shadow-lg">
+      <div
+        class="bg-white flex justify-center px-4 py-10 rounded-3xl shadow-lg"
+      >
         <svg
           id="loading-spinner"
           class="animate-spin h-16 text-green-700 hidden"
@@ -82,7 +86,7 @@
       const fileInput = document.getElementById('file');
       const uploadBtn = document.getElementById('upload');
       const resultArea = document.getElementById('result');
-      const loadingSpinner = document.getElementById('loading-spinner')
+      const loadingSpinner = document.getElementById('loading-spinner');
 
       resultArea.data = {
         bezeichnung: 'bezeichnung des stoffs',
@@ -103,14 +107,14 @@
         const form = new FormData();
         form.set('file', fileInput.files[0]);
 
-        loadingSpinner.classList.remove('hidden')
+        loadingSpinner.classList.remove('hidden');
         resultArea.data = {};
 
         const result = await fetch('/extract', {
           method: 'POST',
           body: form,
         }).then((res) => res.json());
-        loadingSpinner.classList.add('hidden')
+        loadingSpinner.classList.add('hidden');
         resultArea.data = result;
       });
     </script>

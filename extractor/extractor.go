@@ -35,6 +35,7 @@ var (
 	hpSatzRegex       = regexp.MustCompile(`(?im)(\s?\+?\s?E?U?[HP][0-9]{3}[a-zA-Z]{0,2}){1,3}`)
 	signalwortRegex   = regexp.MustCompile(`(?im)signalwort\r?\n?(.*)`)
 	lagerklassenRegex = regexp.MustCompile(`(?im)lagerklasse(.*)`)
+	bzRegex           = regexp.MustCompile(`(?im)((handels?)?name|produktidentifikator)(\s*)\n(.*)`)
 )
 
 type DefaultExtractor struct {
@@ -54,8 +55,6 @@ func (e *DefaultExtractor) WithContent(content string) Extractor {
 }
 
 func (e *DefaultExtractor) ExtractBezeichnung() error {
-	bzRegex := regexp.MustCompile(`(?im)((handels?)?name|produktidentifikator)(\s*)\n(.*)`)
-
 	matches := bzRegex.FindAllStringSubmatch(e.content, -1)
 
 	if len(matches) == 0 {
@@ -121,6 +120,7 @@ func (e *DefaultExtractor) ExtractLagerklasse() error {
 		if strings.Contains(match, "510") {
 			match = strings.ReplaceAll(match, "510", "")
 		}
+
 		// Um Highest-Value Matches abzufangen wird von hinten durchiteriert, damit 1 nicht alle 1x Werte abfängt
 		for i := len(Lagerklassen) - 1; i >= 0; i-- {
 			lgk := Lagerklassen[i]
