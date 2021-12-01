@@ -27,6 +27,7 @@ type SicherheitsdatenblattData struct {
 	Signalwort  string   `json:"signalwort"`
 	HSaetze     []string `json:"hSaezte"`
 	PSaetze     []string `json:"pSaezte"`
+	GHS         []string `json:"ghs"`
 }
 
 var (
@@ -36,6 +37,7 @@ var (
 	signalwortRegex   = regexp.MustCompile(`(?im)signalwort\r?\n?(.*)`)
 	lagerklassenRegex = regexp.MustCompile(`(?im)lagerklasse(.*)`)
 	bzRegex           = regexp.MustCompile(`(?im)((handels?)?name|produktidentifikator)(\s*)\n(.*)`)
+	ghsRegex          = regexp.MustCompile(`(?im)ghs\s?-?[0-9]{2}`)
 )
 
 type DefaultExtractor struct {
@@ -155,11 +157,26 @@ func (e *DefaultExtractor) ExtractHPSaetze() error {
 	return nil
 }
 
+func (e *DefaultExtractor) ExtractGHS() error {
+	matches := ghsRegex.FindAllString(e.content, -1)
+
+	if len(matches) == 0 {
+		return errors.New("could not extract GHS")
+	}
+
+	for _, match := range matches {
+		match = strings.TrimSpace(match)
+		e.result.GHS = append(e.result.GHS, match)
+	}
+
+	return nil
+}
+
 func (e *DefaultExtractor) Extract() *SicherheitsdatenblattData {
 	// TODO: Execute in Parallel
 
 	var wg sync.WaitGroup
-	wg.Add(4)
+	wg.Add(5)
 
 	go func() {
 		if err := e.ExtractBezeichnung(); err != nil {
@@ -187,6 +204,13 @@ func (e *DefaultExtractor) Extract() *SicherheitsdatenblattData {
 
 	go func() {
 		if err := e.ExtractHPSaetze(); err != nil {
+			hclog.Default().Error("error", "error", err)
+		}
+		wg.Done()
+	}()
+
+	go func() {
+		if err := e.ExtractGHS(); err != nil {
 			hclog.Default().Error("error", "error", err)
 		}
 		wg.Done()
