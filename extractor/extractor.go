@@ -35,7 +35,7 @@ var (
 	Lagerklassen = [...]string{"1", "2A", "2B", "3", "4.1A", "4.1B", "4.2", "4.3", "5.1A", "5.1B", "5.1C", "5.2", "6.1A",
 		"6.1B", "6.1C", "6.1D", "6.2", "7", "8A", "8B", "10", "11", "12", "13", "10-13"}
 	hpSatzRegex       = regexp.MustCompile(`(?im)(\s?\+?\s?E?U?[HP][0-9]{3}[a-zA-Z]{0,2}){1,3}`)
-	signalwortRegex   = regexp.MustCompile(`(?im)signalwort\r?\n?(.*)`)
+	signalwortRegex   = regexp.MustCompile(`(?im)(signalwort|signalwörter)\r?\n?(.*)`)
 	lagerklassenRegex = regexp.MustCompile(`(?im)lagerklasse(.*)`)
 	bzRegex           = regexp.MustCompile(`(?im)((handels?)?name|produktidentifikator)(\s*)\n(.*)`)
 	ghsRegex          = regexp.MustCompile(`(?im)ghs\s?-?[0-9]{2}`)
@@ -124,6 +124,8 @@ func (e *DefaultExtractor) ExtractLagerklasse() error {
 		if strings.Contains(match, "510") {
 			match = strings.ReplaceAll(match, "510", "")
 		}
+
+		match = strings.ReplaceAll(match, " ", "")
 
 		// Um Highest-Value Matches abzufangen wird von hinten durchiteriert, damit 1 nicht alle 1x Werte abfängt
 		for i := len(Lagerklassen) - 1; i >= 0; i-- {
