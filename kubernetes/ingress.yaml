@@ -1,16 +1,22 @@
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: ams-auto-sdb
-  namespace: default
+  name: auto-sdb
+  labels:
+    name: auto-sdb
 spec:
-  entryPoints:
-    - websecure
-  routes:
-    - match: Host(`auto-sdb.aaronschweig.dev`)
-      kind: Rule
-      services:
-        - name: ams-auto-sdb
-          port: 3000
   tls:
-    certResolver: cloudflare
+    - hosts:
+        - auto-sdb.aaronschweig.dev
+      secretName: wildcard-aaronschweig-dev
+  rules:
+  - host: auto-sdb.aaronschweig.dev
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: ams-auto-sdb
+            port: 
+              number: 3000
