@@ -16,33 +16,36 @@
       href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
       rel="stylesheet"
     />
-    <link
-      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
-      rel="stylesheet"
-      type="text/css"
-    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'media',
+      };
+    </script>
     <script src="https://unpkg.com/@alenaksu/json-viewer@0.3.4"></script>
     <title>SDB-Extractor</title>
     <style>
-      json-viewer {
-        --background-color: white;
-        --string-color: #000;
+      @media (prefers-color-scheme: light) {
+        json-viewer {
+          --background-color: white;
+          --string-color: #000;
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        json-viewer {
+          --background-color: rgb(107 114 128);
+          --string-color: rgb(249 250 251);
+        }
       }
     </style>
   </head>
-  <body class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center mx-8">
+  <body
+    class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center mx-8 dark:bg-gray-800 dark:text-gray-50"
+  >
     <h1 class="text-4xl py-4">SDB-Extractor</h1>
     <div class="grid grid-cols-2 gap-4">
       <div
-        class="
-          flex flex-col
-          justify-around
-          items-center
-          px-4
-          bg-white
-          shadow-lg
-          rounded-3xl
-        "
+        class="flex flex-col justify-around items-center px-4 bg-white dark:bg-gray-500 shadow-lg rounded-3xl"
       >
         <label for="file">
           Datei hochladen
@@ -56,11 +59,11 @@
         </button>
       </div>
       <div
-        class="bg-white flex justify-center px-4 py-10 rounded-3xl shadow-lg"
+        class="bg-white dark:bg-gray-500 flex justify-center px-4 py-10 rounded-3xl shadow-lg"
       >
         <svg
           id="loading-spinner"
-          class="animate-spin h-16 text-green-700 hidden"
+          class="animate-spin h-16 text-green-700 dark:text-teal-200 hidden"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"
@@ -79,7 +82,7 @@
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           ></path>
         </svg>
-        <json-viewer id="result"></json-viewer>
+        <json-viewer id="result" ></json-viewer>
       </div>
     </div>
     <script>
@@ -102,7 +105,7 @@
           'P403',
         ],
         ghs: ['GHS01'],
-        wgk: '1'
+        wgk: '1',
       };
 
       uploadBtn.addEventListener('click', async () => {

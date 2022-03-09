@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"io/fs"
@@ -21,43 +22,25 @@ type ErrResponse struct {
 	Message string `json:"message"`
 }
 
-func NewErrResponse(err error) *ErrResponse {
-	return &ErrResponse{err.Error()}
-}
-
 var (
 	//go:embed frontend/*
 	frontend embed.FS
 )
 
-func returnError(w http.ResponseWriter, err error) {
-	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(NewErrResponse(err))
+func writeError(rw http.ResponseWriter, statusCode int, err error) {
+	rw.WriteHeader(statusCode)
+
+	rw.Header().Add("Content-Type", "application/json")
+	json.NewEncoder(rw).Encode(&ErrResponse{err.Error()})
 }
 
-func main() {
-	log := hclog.Default()
-	r := chi.NewRouter()
-
-	r.Use(middleware.BasicAuth("SDB-Extractor", map[string]string{
-		"admin": "admin",
-	}))
-
-	static, err := fs.Sub(frontend, "frontend")
-	if err != nil {
-		panic(err)
-	}
-
-	r.Handle("/", http.FileServer(http.FS(static)))
-
-	r.Post("/extract", func(rw http.ResponseWriter, r *http.Request) {
-
+func extractSDB(log hclog.Logger) func(http.ResponseWriter, *http.Request) {
+	return func(rw http.ResponseWriter, r *http.Request) {
 		file, _, err := r.FormFile("file")
 		if err != nil {
-			log.Error("Error reading file", "error", err)
+			log.Error("error reading file", "error", err)
 
-			rw.WriteHeader(http.StatusBadRequest)
-			returnError(rw, err)
+			writeError(rw, http.StatusBadRequest, err)
 			return
 		}
 		defer file.Close()
@@ -66,23 +49,19 @@ func main() {
 		if err != nil {
 			log.Error("Error creating temp file", "error", err)
 
-			rw.WriteHeader(http.StatusInternalServerError)
-			returnError(rw, err)
+			writeError(rw, http.StatusInternalServerError, err)
 			return
 		}
 		defer tempFile.Close()
 		defer os.Remove(tempFile.Name())
 
-		content, err := io.ReadAll(file)
+		_, err = io.Copy(tempFile, file)
 		if err != nil {
-			log.Error("Error reading file", "error", err)
+			log.Error("error saving file", "error", err)
 
-			rw.WriteHeader(http.StatusInternalServerError)
-			returnError(rw, err)
+			writeError(rw, http.StatusInternalServerError, err)
 			return
 		}
-
-		tempFile.Write(content)
 
 		cmd := exec.Command("gs", "-sDEVICE=txtwrite", "-dBATCH", "-dNOPAUSE", "-sOutputFile=-", tempFile.Name())
 
@@ -91,26 +70,37 @@ func main() {
 		if err != nil {
 			log.Error("could not process pdf with gs", "error", err)
 
-			rw.WriteHeader(http.StatusInternalServerError)
-			rw.Header().Add("Content-Type", "application/json")
-			json.NewEncoder(rw).Encode(NewErrResponse(err))
+			writeError(rw, http.StatusInternalServerError, err)
 			return
 		}
 
-		e := extractor.NewDefaultExtractor().WithContent(string(out))
+		e := extractor.NewDefaultExtractor(extractor.WithContent(string(out)), extractor.WithLogger(log))
 
 		result := e.Extract()
 
 		rw.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(rw).Encode(&result)
-	})
+	}
+}
 
-	port := os.Getenv("PORT")
+func main() {
+	port := flag.String("port", "3000", "the port for the application to run on")
+	flag.Parse()
 
-	if port == "" {
-		port = "3000"
+	log := hclog.Default()
+	r := chi.NewRouter()
+
+	r.Use(middleware.BasicAuth("SDB-Extractor", map[string]string{"admin": "admin"}))
+
+	static, err := fs.Sub(frontend, "frontend")
+	if err != nil {
+		panic(err)
 	}
 
-	log.Info(fmt.Sprintf("Application is up and running on http://localhost:%s", port))
-	http.ListenAndServe(fmt.Sprintf(":%s", port), r)
+	r.Handle("/", http.FileServer(http.FS(static)))
+
+	r.Post("/extract", extractSDB(log))
+
+	log.Info(fmt.Sprintf("Application is up and running on http://localhost:%s", *port))
+	http.ListenAndServe(fmt.Sprintf(":%s", *port), r)
 }
