@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <title>SDB-Extractor</title>
+    
     <!-- include favicon -->
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <link
@@ -16,41 +19,35 @@
       href="https://fonts.googleapis.com/css2?family=Inter&display=swap"
       rel="stylesheet"
     />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <script>
       tailwind.config = {
         darkMode: 'media',
       };
     </script>
-    <script src="https://unpkg.com/@alenaksu/json-viewer@0.3.4"></script>
-    <title>SDB-Extractor</title>
-    <style>
-      @media (prefers-color-scheme: light) {
-        json-viewer {
-          --background-color: white;
-          --string-color: #000;
-        }
-      }
-      @media (prefers-color-scheme: dark) {
-        json-viewer {
-          --background-color: rgb(107 114 128);
-          --string-color: rgb(249 250 251);
-        }
+    <style type="text/tailwindcss">
+      input[type='file']::-webkit-file-upload-button,
+      input[type='file']::file-selector-button {
+        @apply font-medium text-sm cursor-pointer border-0 py-2.5 pl-8 pr-4;
+        margin-inline-start: -1rem;
+        margin-inline-end: 1rem;
       }
     </style>
   </head>
   <body
-    class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center mx-8 dark:bg-gray-800 dark:text-gray-50"
+    class="min-h-screen bg-gray-100 py-6 px-6 flex flex-col justify-center align-center mx-8 dark:bg-gray-800 dark:text-gray-50"
   >
     <h1 class="text-4xl py-4">SDB-Extractor</h1>
     <div class="grid grid-cols-2 gap-4">
       <div
-        class="flex flex-col justify-around items-center px-4 bg-white dark:bg-gray-500 shadow-lg rounded-3xl"
+        class="flex flex-col justify-center items-center gap-y-4 px-4 bg-white dark:bg-gray-500 shadow-lg rounded-3xl"
       >
-        <label for="file">
-          Datei hochladen
-          <input type="file" name="file" id="file" />
-        </label>
+        <input
+          type="file"
+          name="file"
+          id="file"
+          class="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+        />
         <button
           class="px-3 py-2 bg-blue-600 rounded shadow text-white text-lg w-72"
           id="upload"
@@ -82,45 +79,126 @@
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           ></path>
         </svg>
-        <json-viewer id="result" ></json-viewer>
+        <div id="content" class="w-full space-y-2">
+          <div id="progress-container" class="w-full bg-gray-200 hidden">
+            <div
+              id="progress"
+              class="bg-green-600 text-xs font-medium text-blue-100 text-center h-2 leading-none rounded text-white"
+              style="width: 0%"
+            ></div>
+          </div>
+          <label class="block">
+            <span class="text-gray-700">Bezeichnung</span>
+            <input
+              name="bezeichnung"
+              readonly
+              type="text"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+            />
+          </label>
+          <label class="block">
+            <span class="text-gray-700">Lagerklasse</span>
+            <input
+              name="lagerklasse"
+              readonly
+              type="text"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+            />
+          </label>
+          <label class="block">
+            <span class="text-gray-700">Signalwort</span>
+            <input
+              name="signalwort"
+              readonly
+              type="text"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+            />
+          </label>
+          <label class="block">
+            <span class="text-gray-700">GHS</span>
+            <input
+              name="ghs"
+              readonly
+              type="text"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+            />
+          </label>
+          <label class="block">
+            <span class="text-gray-700">H-Sätze</span>
+            <input
+              name="hSaezte"
+              readonly
+              type="text"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+            />
+          </label>
+          <label class="block">
+            <span class="text-gray-700">P-Sätze</span>
+            <input
+              name="pSaezte"
+              readonly
+              type="text"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+            />
+          </label>
+          <label class="block">
+            <span class="text-gray-700">WGK</span>
+            <input
+              name="wgk"
+              readonly
+              type="text"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+            />
+          </label>
+        </div>
       </div>
     </div>
     <script>
       const fileInput = document.getElementById('file');
       const uploadBtn = document.getElementById('upload');
-      const resultArea = document.getElementById('result');
       const loadingSpinner = document.getElementById('loading-spinner');
-
-      resultArea.data = {
-        bezeichnung: 'bezeichnung des stoffs',
-        lagerklasse: '3',
-        signalwort: 'Gefahr',
-        hSaezte: ['H225', 'H315', 'H361f', 'H336', 'H373', 'H304', 'H411'],
-        pSaezte: [
-          'P210',
-          'P243',
-          'P273',
-          'P301+P330+P331',
-          'P370+P378',
-          'P403',
-        ],
-        ghs: ['GHS01'],
-        wgk: '1',
-      };
+      const contentContainer = document.getElementById('content');
+      const progressContainer = document.getElementById('progress-container');
+      const progressBar = document.getElementById('progress');
 
       uploadBtn.addEventListener('click', async () => {
         const form = new FormData();
         form.set('file', fileInput.files[0]);
 
         loadingSpinner.classList.remove('hidden');
-        resultArea.data = {};
+        contentContainer.classList.add('hidden');
 
         const result = await fetch('/extract', {
           method: 'POST',
           body: form,
         }).then((res) => res.json());
         loadingSpinner.classList.add('hidden');
-        resultArea.data = result;
+        contentContainer.classList.remove('hidden');
+
+        const total = Object.keys(result).length;
+        let notExtracted = 0;
+
+        Object.keys(result).forEach((key) => {
+          const input = document.querySelector(`input[name="${key}"]`);
+          if (input == null) {
+            return;
+          }
+          input.classList.remove('border-red-500');
+
+          let value = result[key];
+          if (value == null || value.length == 0) {
+            input.classList.add('border-red-500');
+            value = `No value for ${key} could be extracted`;
+
+            notExtracted += 1;
+          }
+
+          input.value = value;
+        });
+
+        progressContainer.classList.remove('hidden');
+        const percentage = ((total - notExtracted) / total) * 100;
+        progressBar.style.width = `${percentage}%`;
       });
     </script>
   </body>
