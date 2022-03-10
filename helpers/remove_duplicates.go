@@ -1,13 +1,12 @@
 package helpers
 
 func RemoveDuplicates(elements []string) []string {
-	encountered := map[string]bool{}
-	var result []string
+	encountered := make(map[string]struct{}, len(elements))
+	result := make([]string, 0, len(elements))
 
 	for v := range elements {
-		if !encountered[elements[v]] {
-
-			encountered[elements[v]] = true
+		if _, ok := encountered[elements[v]]; !ok {
+			encountered[elements[v]] = struct{}{}
 			result = append(result, elements[v])
 		}
 	}

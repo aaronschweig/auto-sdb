@@ -19,4 +19,4 @@ spec:
           service:
             name: ams-auto-sdb
             port: 
-              number: 3000
+              name: web
