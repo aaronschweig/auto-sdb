@@ -42,33 +42,6 @@ type defaultExtractor struct {
 	logger  hclog.Logger
 }
 
-type Options func(e *defaultExtractor)
-
-func WithContent(content string) Options {
-	return func(e *defaultExtractor) {
-		e.content = content
-	}
-}
-
-func WithLogger(logger hclog.Logger) Options {
-	return func(e *defaultExtractor) {
-		e.logger = logger
-	}
-}
-
-func NewDefaultExtractor(opts ...Options) Extractor {
-	e := &defaultExtractor{
-		content: "",
-		logger:  hclog.Default(),
-	}
-
-	for _, opt := range opts {
-		opt(e)
-	}
-
-	return e
-}
-
 func (e *defaultExtractor) ExtractBezeichnung(result *SicherheitsdatenblattData) error {
 	matches := bzRegex.FindAllStringSubmatch(e.content, -1)
 
@@ -80,7 +53,6 @@ func (e *defaultExtractor) ExtractBezeichnung(result *SicherheitsdatenblattData)
 		for j := 1; j < len(matches[i]); j++ {
 			candidate := matches[i][j]
 
-			// ToLower
 			candidate = strings.ToLower(candidate)
 
 			// Strip Keyword
@@ -259,4 +231,9 @@ func (e *defaultExtractor) Extract() *SicherheitsdatenblattData {
 	wg.Wait()
 
 	return result
+}
+
+func Extract(content string, logger hclog.Logger) *SicherheitsdatenblattData {
+	e := &defaultExtractor{content: content, logger: logger}
+	return e.Extract()
 }

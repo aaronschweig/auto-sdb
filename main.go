@@ -1,18 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"embed"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"io/fs"
 	"net/http"
-	"os"
 	"os/exec"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
 	"github.com/hashicorp/go-hclog"
 
 	"github.com/aaronschweig/auto-sdb/extractor"
@@ -45,27 +42,14 @@ func extractSDB(log hclog.Logger) func(http.ResponseWriter, *http.Request) {
 		}
 		defer file.Close()
 
-		tempFile, err := os.CreateTemp(".", "sdb-*.pdf")
-		if err != nil {
-			log.Error("Error creating temp file", "error", err)
+		cmd := exec.Command("gs", "-sDEVICE=txtwrite", "-dBATCH", "-dNOPAUSE", "-sOutputFile=-", "-")
 
-			writeError(rw, http.StatusInternalServerError, err)
-			return
-		}
-		defer tempFile.Close()
-		defer os.Remove(tempFile.Name())
+		cmd.Stdin = file
 
-		_, err = io.Copy(tempFile, file)
-		if err != nil {
-			log.Error("error saving file", "error", err)
+		var buffer bytes.Buffer
+		cmd.Stdout = &buffer
 
-			writeError(rw, http.StatusInternalServerError, err)
-			return
-		}
-
-		cmd := exec.Command("gs", "-sDEVICE=txtwrite", "-dBATCH", "-dNOPAUSE", "-sOutputFile=-", tempFile.Name())
-
-		out, err := cmd.Output()
+		err = cmd.Run()
 
 		if err != nil {
 			log.Error("could not process pdf with gs", "error", err)
@@ -74,33 +58,44 @@ func extractSDB(log hclog.Logger) func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		e := extractor.NewDefaultExtractor(extractor.WithContent(string(out)), extractor.WithLogger(log))
-
-		result := e.Extract()
+		result := extractor.Extract(buffer.String(), log)
 
 		rw.Header().Add("Content-Type", "application/json")
 		json.NewEncoder(rw).Encode(&result)
 	}
 }
 
+func post(f http.HandlerFunc) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.NotFound(rw, r)
+			return
+		}
+		f.ServeHTTP(rw, r)
+	}
+}
+
 func main() {
 	port := flag.String("port", "3000", "the port for the application to run on")
+	dev := flag.Bool("dev", false, "start server in dev mode and do not bundle frontend in binary")
 	flag.Parse()
 
 	log := hclog.Default()
-	r := chi.NewRouter()
-
-	r.Use(middleware.BasicAuth("SDB-Extractor", map[string]string{"admin": "admin"}))
+	mux := http.NewServeMux()
 
 	static, err := fs.Sub(frontend, "frontend")
 	if err != nil {
 		panic(err)
 	}
 
-	r.Handle("/", http.FileServer(http.FS(static)))
+	if *dev {
+		mux.Handle("/", http.FileServer(http.Dir("./frontend")))
+	} else {
+		mux.Handle("/", http.FileServer(http.FS(static)))
+	}
 
-	r.Post("/extract", extractSDB(log))
+	mux.HandleFunc("/extract", post(extractSDB(log)))
 
 	log.Info(fmt.Sprintf("Application is up and running on http://localhost:%s", *port))
-	http.ListenAndServe(fmt.Sprintf(":%s", *port), r)
+	http.ListenAndServe(fmt.Sprintf(":%s", *port), mux)
 }

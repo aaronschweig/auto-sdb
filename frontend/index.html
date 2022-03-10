@@ -49,7 +49,7 @@
           class="block w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 cursor-pointer dark:text-gray-400 focus:outline-none focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
         />
         <button
-          class="px-3 py-2 bg-blue-600 rounded shadow text-white text-lg w-72"
+          class="px-3 py-2 bg-blue-600 hover:bg-blue-400 dark:bg-sky-600 dark:hover:bg-sky-400 transition-colors rounded shadow text-white text-lg w-72"
           id="upload"
         >
           Extract
@@ -79,75 +79,75 @@
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           ></path>
         </svg>
-        <div id="content" class="w-full space-y-2">
-          <div id="progress-container" class="w-full bg-gray-200 hidden">
+        <div id="content" class="w-full space-y-2 dark:text-gray-200">
+          <div id="progress-container" class="w-full bg-gray-200 dark:bg-gray-200 rounded overflow-hidden hidden">
             <div
               id="progress"
-              class="bg-green-600 text-xs font-medium text-blue-100 text-center h-2 leading-none rounded text-white"
+              class="bg-green-600 text-xs font-medium text-blue-100 text-center h-2 leading-none text-white"
               style="width: 0%"
             ></div>
           </div>
           <label class="block">
-            <span class="text-gray-700">Bezeichnung</span>
+            <span class="text-gray-700 dark:text-gray-200">Bezeichnung</span>
             <input
               name="bezeichnung"
               readonly
               type="text"
-              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
             />
           </label>
           <label class="block">
-            <span class="text-gray-700">Lagerklasse</span>
+            <span class="text-gray-700 dark:text-gray-200">Lagerklasse</span>
             <input
               name="lagerklasse"
               readonly
               type="text"
-              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
             />
           </label>
           <label class="block">
-            <span class="text-gray-700">Signalwort</span>
+            <span class="text-gray-700 dark:text-gray-200">Signalwort</span>
             <input
               name="signalwort"
               readonly
               type="text"
-              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
             />
           </label>
           <label class="block">
-            <span class="text-gray-700">GHS</span>
+            <span class="text-gray-700 dark:text-gray-200">GHS</span>
             <input
               name="ghs"
               readonly
               type="text"
-              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
             />
           </label>
           <label class="block">
-            <span class="text-gray-700">H-Sätze</span>
+            <span class="text-gray-700 dark:text-gray-200">H-Sätze</span>
             <input
               name="hSaezte"
               readonly
               type="text"
-              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
             />
           </label>
           <label class="block">
-            <span class="text-gray-700">P-Sätze</span>
+            <span class="text-gray-700 dark:text-gray-200">P-Sätze</span>
             <input
               name="pSaezte"
               readonly
               type="text"
-              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
             />
           </label>
           <label class="block">
-            <span class="text-gray-700">WGK</span>
+            <span class="text-gray-700 dark:text-gray-200">WGK</span>
             <input
               name="wgk"
               readonly
               type="text"
-              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0"
+              class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
             />
           </label>
         </div>
