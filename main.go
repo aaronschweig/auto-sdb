@@ -20,7 +20,7 @@ type ErrResponse struct {
 }
 
 var (
-	//go:embed frontend/*
+	//go:embed frontend/build/* frontend/build/_app/pages/* frontend/build/_app/assets/pages/*
 	frontend embed.FS
 )
 
@@ -83,14 +83,13 @@ func main() {
 	log := hclog.Default()
 	mux := http.NewServeMux()
 
-	static, err := fs.Sub(frontend, "frontend")
-	if err != nil {
-		panic(err)
-	}
-
 	if *dev {
-		mux.Handle("/", http.FileServer(http.Dir("./frontend")))
+		mux.Handle("/", http.FileServer(http.Dir("./frontend/build")))
 	} else {
+		static, err := fs.Sub(frontend, "frontend/build")
+		if err != nil {
+			panic(err)
+		}
 		mux.Handle("/", http.FileServer(http.FS(static)))
 	}
 

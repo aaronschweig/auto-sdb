@@ -7,16 +7,13 @@ COPY go.sum .
 RUN go mod download
 COPY . .
 
-RUN go build -o main .
-
-WORKDIR /dist
-RUN cp /build/main .
+RUN CGO_ENABLED=0 go build -ldflags="-w -s" -o main .
 
 
 FROM alpine:latest
 
 RUN apk add ghostscript
 
-COPY --from=builder /dist/main /
+COPY --from=builder /build/main /
 
 CMD ["/main"]
