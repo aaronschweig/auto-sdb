@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { auth0 } from '$lib/auth';
+
 	let loading = false;
 	let isInitial = true;
 	let percentage = 0.0;
@@ -30,6 +32,9 @@
 
 		const extractorResult = await fetch('/extract', {
 			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${await auth0.getTokenSilently()}`
+			},
 			body: form
 		}).then((res) => res.json() as Promise<ExtractorResult>);
 

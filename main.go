@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"embed"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/fs"
 	"net/http"
 	"os/exec"
 
+	"github.com/ams-pro/management-api/auth"
 	"github.com/hashicorp/go-hclog"
 
 	"github.com/aaronschweig/auto-sdb/extractor"
@@ -71,7 +73,11 @@ func post(f http.HandlerFunc) http.HandlerFunc {
 			http.NotFound(rw, r)
 			return
 		}
-		f.ServeHTTP(rw, r)
+		if auth.IsAuthenticated(r.Context()) {
+			f.ServeHTTP(rw, r)
+		} else {
+			writeError(rw, http.StatusUnauthorized, errors.New("please provide a valid access_token"))
+		}
 	}
 }
 
@@ -93,7 +99,7 @@ func main() {
 		mux.Handle("/", http.FileServer(http.FS(static)))
 	}
 
-	mux.HandleFunc("/extract", post(extractSDB(log)))
+	mux.Handle("/extract", auth.Middleware(post(extractSDB(log)), "evaluate-ams-pro.eu.auth0.com"))
 
 	log.Info(fmt.Sprintf("Application is up and running on http://localhost:%s", *port))
 	http.ListenAndServe(fmt.Sprintf(":%s", *port), mux)
