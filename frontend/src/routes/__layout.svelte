@@ -1,5 +1,11 @@
 <script>
 	import '../app.css';
+	import * as auth from '$lib/auth';
+	import { onMount } from 'svelte';
+
+	onMount(async () => {
+		await auth.init()
+	});
 </script>
 
 <main
