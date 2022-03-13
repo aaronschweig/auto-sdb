@@ -32,7 +32,7 @@ var (
 	hpSatzRegex       = regexp.MustCompile(`(?im)(\s?\+?\s?E?U?[HP][0-9]{3}[a-zA-Z]{0,2}){1,3}`)
 	signalwortRegex   = regexp.MustCompile(`(?im)(signalwort|signalwörter)\r?\n?(.*)`)
 	lagerklassenRegex = regexp.MustCompile(`(?im)lagerklasse(.*)`)
-	bzRegex           = regexp.MustCompile(`(?im)((handels?)?name|produktidentifikator)(\s*)\n(.*)`)
+	bzRegex           = regexp.MustCompile(`(?im)((handels?)?name|produktidentifikator)\s*[\r\n]?(bezeichnung des stoffe?s)?\s+(.*)`)
 	ghsRegex          = regexp.MustCompile(`(?im)ghs\s?-?[0-9]{2}`)
 	wgkRegex          = regexp.MustCompile(`(?im)(Wassergefährdungsklasse|WGK)\s+?(\d)`)
 )
@@ -42,7 +42,7 @@ type defaultExtractor struct {
 	logger  hclog.Logger
 }
 
-func (e *defaultExtractor) ExtractBezeichnung(result *SicherheitsdatenblattData) error {
+func (e *defaultExtractor) extractBezeichnung(result *SicherheitsdatenblattData) error {
 	matches := bzRegex.FindAllStringSubmatch(e.content, -1)
 
 	if len(matches) == 0 {
@@ -50,7 +50,7 @@ func (e *defaultExtractor) ExtractBezeichnung(result *SicherheitsdatenblattData)
 	}
 
 	for i := range matches {
-		for j := 1; j < len(matches[i]); j++ {
+		for j := len(matches[i]) - 1; j > 0; j-- {
 			candidate := matches[i][j]
 
 			candidate = strings.ToLower(candidate)
@@ -76,7 +76,7 @@ func (e *defaultExtractor) ExtractBezeichnung(result *SicherheitsdatenblattData)
 	return errors.New("could not extract bezeichnung")
 }
 
-func (e *defaultExtractor) ExtractSignalwort(result *SicherheitsdatenblattData) error {
+func (e *defaultExtractor) extractSignalwort(result *SicherheitsdatenblattData) error {
 	matches := signalwortRegex.FindAllString(e.content, -1)
 
 	if len(matches) == 0 {
@@ -97,7 +97,7 @@ func (e *defaultExtractor) ExtractSignalwort(result *SicherheitsdatenblattData) 
 	return errors.New("could not extract signalwort")
 }
 
-func (e *defaultExtractor) ExtractLagerklasse(result *SicherheitsdatenblattData) error {
+func (e *defaultExtractor) extractLagerklasse(result *SicherheitsdatenblattData) error {
 	matches := lagerklassenRegex.FindAllString(e.content, -1)
 
 	if len(matches) == 0 {
@@ -123,7 +123,7 @@ func (e *defaultExtractor) ExtractLagerklasse(result *SicherheitsdatenblattData)
 	return errors.New("could not extract lagerklasse")
 }
 
-func (e *defaultExtractor) ExtractHPSaetze(result *SicherheitsdatenblattData) error {
+func (e *defaultExtractor) extractHPSaetze(result *SicherheitsdatenblattData) error {
 	matches := hpSatzRegex.FindAllString(e.content, -1)
 
 	if len(matches) == 0 {
@@ -147,7 +147,7 @@ func (e *defaultExtractor) ExtractHPSaetze(result *SicherheitsdatenblattData) er
 	return nil
 }
 
-func (e *defaultExtractor) ExtractGHS(result *SicherheitsdatenblattData) error {
+func (e *defaultExtractor) extractGHS(result *SicherheitsdatenblattData) error {
 	matches := ghsRegex.FindAllString(e.content, -1)
 
 	if len(matches) == 0 {
@@ -162,7 +162,7 @@ func (e *defaultExtractor) ExtractGHS(result *SicherheitsdatenblattData) error {
 	return nil
 }
 
-func (e *defaultExtractor) ExtractWGK(result *SicherheitsdatenblattData) error {
+func (e *defaultExtractor) extractWGK(result *SicherheitsdatenblattData) error {
 	matches := wgkRegex.FindAllStringSubmatch(e.content, -1)
 
 	if len(matches) == 0 {
@@ -184,7 +184,7 @@ func (e *defaultExtractor) Extract() *SicherheitsdatenblattData {
 	result := &SicherheitsdatenblattData{}
 
 	go func() {
-		if err := e.ExtractBezeichnung(result); err != nil {
+		if err := e.extractBezeichnung(result); err != nil {
 			result.Bezeichnung = err.Error()
 			e.logger.Error("error", "error", err)
 		}
@@ -192,7 +192,7 @@ func (e *defaultExtractor) Extract() *SicherheitsdatenblattData {
 	}()
 
 	go func() {
-		if err := e.ExtractSignalwort(result); err != nil {
+		if err := e.extractSignalwort(result); err != nil {
 			result.Signalwort = err.Error()
 			e.logger.Error("error", "error", err)
 		}
@@ -200,7 +200,7 @@ func (e *defaultExtractor) Extract() *SicherheitsdatenblattData {
 	}()
 
 	go func() {
-		if err := e.ExtractLagerklasse(result); err != nil {
+		if err := e.extractLagerklasse(result); err != nil {
 			result.Lagerklasse = err.Error()
 			e.logger.Error("error", "error", err)
 		}
@@ -208,21 +208,21 @@ func (e *defaultExtractor) Extract() *SicherheitsdatenblattData {
 	}()
 
 	go func() {
-		if err := e.ExtractHPSaetze(result); err != nil {
+		if err := e.extractHPSaetze(result); err != nil {
 			e.logger.Error("error", "error", err)
 		}
 		wg.Done()
 	}()
 
 	go func() {
-		if err := e.ExtractGHS(result); err != nil {
+		if err := e.extractGHS(result); err != nil {
 			e.logger.Error("error", "error", err)
 		}
 		wg.Done()
 	}()
 
 	go func() {
-		if err := e.ExtractWGK(result); err != nil {
+		if err := e.extractWGK(result); err != nil {
 			e.logger.Error("error", "error", err)
 		}
 		wg.Done()
@@ -234,6 +234,6 @@ func (e *defaultExtractor) Extract() *SicherheitsdatenblattData {
 }
 
 func Extract(content string, logger hclog.Logger) *SicherheitsdatenblattData {
-	e := &defaultExtractor{content: content, logger: logger}
+	e := &defaultExtractor{content, logger}
 	return e.Extract()
 }

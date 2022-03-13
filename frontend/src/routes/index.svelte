@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { auth0 } from '$lib/auth';
+	import ResultField from '$lib/components/result-field.svelte';
 
 	let loading = false;
 	let isInitial = true;
@@ -99,83 +100,33 @@
 					style="width: {percentage}%"
 				/>
 			</div>
-			<label class="block">
-				<span class="text-gray-700 dark:text-gray-200">Bezeichnung</span>
-				<input
-					value={result.bezeichnung}
-					name="bezeichnung"
-					readonly
-					type="text"
-					class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
-					class:border-red-500={!isInitial && !result.bezeichnung?.length}
-				/>
-			</label>
-			<label class="block">
-				<span class="text-gray-700 dark:text-gray-200">Lagerklasse</span>
-				<input
-					value={result.lagerklasse}
-					name="lagerklasse"
-					readonly
-					type="text"
-					class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
-					class:border-red-500={!isInitial && !result.lagerklasse?.length}
-				/>
-			</label>
-			<label class="block">
-				<span class="text-gray-700 dark:text-gray-200">Signalwort</span>
-				<input
-					value={result.signalwort}
-					name="signalwort"
-					readonly
-					type="text"
-					class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
-					class:border-red-500={!isInitial && !result.signalwort?.length}
-				/>
-			</label>
-			<label class="block">
-				<span class="text-gray-700 dark:text-gray-200">GHS</span>
-				<input
-					value={result.ghs}
-					name="ghs"
-					readonly
-					type="text"
-					class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
-					class:border-red-500={!isInitial && !result.ghs?.length}
-				/>
-			</label>
-			<label class="block">
-				<span class="text-gray-700 dark:text-gray-200">H-Sätze</span>
-				<input
-					value={result.hSaezte}
-					name="hSaezte"
-					readonly
-					type="text"
-					class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
-					class:border-red-500={!isInitial && !result.hSaezte?.length}
-				/>
-			</label>
-			<label class="block">
-				<span class="text-gray-700 dark:text-gray-200">P-Sätze</span>
-				<input
-					value={result.pSaezte}
-					name="pSaezte"
-					readonly
-					type="text"
-					class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
-					class:border-red-500={!isInitial && !result.pSaezte?.length}
-				/>
-			</label>
-			<label class="block">
-				<span class="text-gray-700 dark:text-gray-200">WGK</span>
-				<input
-					value={result.wgk}
-					name="wgk"
-					readonly
-					type="text"
-					class="block w-full rounded-md bg-gray-100 border-transparent focus:border-gray-500 focus:bg-white focus:ring-0 dark:bg-gray-700"
-					class:border-red-500={!isInitial && !result.wgk?.length}
-				/>
-			</label>
+			<ResultField
+				name="bezeichnung"
+				value={result.bezeichnung}
+				invalid={!isInitial && !result.bezeichnung?.length}
+			/>
+			<ResultField
+				name="lagerklasse"
+				value={result.lagerklasse}
+				invalid={!isInitial && !result.lagerklasse?.length}
+			/>
+			<ResultField
+				name="signalwort"
+				value={result.signalwort}
+				invalid={!isInitial && !result.signalwort?.length}
+			/>
+			<ResultField name="ghs" value={result.ghs} invalid={!isInitial && !result.ghs?.length} />
+			<ResultField
+				name="hSaezte"
+				value={result.hSaezte.join(', ')}
+				invalid={!isInitial && !result.hSaezte?.length}
+			/>
+			<ResultField
+				name="pSaezte"
+				value={result.pSaezte.join(', ')}
+				invalid={!isInitial && !result.pSaezte?.length}
+			/>
+			<ResultField name="wgk" value={result.wgk} invalid={!isInitial && !result.wgk?.length} />
 		</div>
 	</div>
 </div>

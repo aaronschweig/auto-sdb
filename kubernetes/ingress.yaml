@@ -6,9 +6,9 @@ metadata:
     name: auto-sdb
 spec:
   tls:
-    - hosts:
-        - auto-sdb.aaronschweig.dev
-      secretName: wildcard-aaronschweig-dev
+  - hosts:
+    - auto-sdb.aaronschweig.dev
+    secretName: wildcard-aaronschweig-dev
   rules:
   - host: auto-sdb.aaronschweig.dev
     http:
